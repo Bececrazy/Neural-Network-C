@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "IA/tensor.h"
-#include "IA/image.h"
+#include "../Libraries/PC/tensor.h"
+#include "../Libraries/PC/image.h"
 
 using namespace std;
 
@@ -11,7 +11,7 @@ Mat frame;
 tensor* img = new tensor[4];
 	
 void* Img_Detection( void* arg ){
-	img[0] = decrease_image(img2tensor(frame),128);
+	img[0] = decrease_image(img2tensor(frame),100);
 	pthread_exit(NULL);}
 
 int main(){
@@ -21,7 +21,7 @@ int main(){
 	
 	VideoCapture cap("/home/enmanuel/Vídeos/Proyectos/MusicOsciloscope.mp4");
 	char window_name[10];
-	sprintf(window_name,"(%d,%d)",128,128);
+	sprintf(window_name,"(%d,%d)",100,100);
 	namedWindow(window_name, WINDOW_NORMAL);
 	if (cap.isOpened() == false){ printf("Cannot open the video file \n"); exit(1);}
 

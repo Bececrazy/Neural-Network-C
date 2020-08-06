@@ -2,22 +2,22 @@
 #include "stdlib.h"
 
 #include "dirent.h"
-#include "IA/tensor.h"
-#include "IA/image.h"
+#include "../Libraries/PC/tensor.h"
+#include "../Libraries/PC/image.h"
 
 using namespace std;
 
 char trainingPath[10][100] = {
-	"/home/enmanuel/Documentos/develop/cpp/ML/dataset/mnist/trainingSet/0",
-	"/home/enmanuel/Documentos/develop/cpp/ML/dataset/mnist/trainingSet/1",
-	"/home/enmanuel/Documentos/develop/cpp/ML/dataset/mnist/trainingSet/2",
-	"/home/enmanuel/Documentos/develop/cpp/ML/dataset/mnist/trainingSet/3",
-	"/home/enmanuel/Documentos/develop/cpp/ML/dataset/mnist/trainingSet/4",
-	"/home/enmanuel/Documentos/develop/cpp/ML/dataset/mnist/trainingSet/5",
-	"/home/enmanuel/Documentos/develop/cpp/ML/dataset/mnist/trainingSet/6",
-	"/home/enmanuel/Documentos/develop/cpp/ML/dataset/mnist/trainingSet/7",
-	"/home/enmanuel/Documentos/develop/cpp/ML/dataset/mnist/trainingSet/8",
-	"/home/enmanuel/Documentos/develop/cpp/ML/dataset/mnist/trainingSet/9",
+	"Dataset/mnist/trainingSet/0",
+	"Dataset/mnist/trainingSet/1",
+	"Dataset/mnist/trainingSet/2",
+	"Dataset/mnist/trainingSet/3",
+	"Dataset/mnist/trainingSet/4",
+	"Dataset/mnist/trainingSet/5",
+	"Dataset/mnist/trainingSet/6",
+	"Dataset/mnist/trainingSet/7",
+	"Dataset/mnist/trainingSet/8",
+	"Dataset/mnist/trainingSet/9",
 };
 
 float TrainingOutput[10][10] = {
@@ -33,7 +33,7 @@ float TrainingOutput[10][10] = {
 	{0,0,0,0,0,0,0,0,0,1},
 };
 
-char testSet[100] = "/home/enmanuel/Documentos/develop/cpp/ML/dataset/mnist/testSet";
+char testSet[100] = "Dataset/mnist/testSet";
 
 int main(){
 

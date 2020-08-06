@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "IA/tensor.h"
-#include "IA/image.h"
+#include "../Libraries/PC/tensor.h"
+#include "../Libraries/PC/image.h"
 
 using namespace std;
 
@@ -25,7 +25,7 @@ int main(){
 
 		img[0] = decrease_image(img2tensor(frame),200);
 		img[1] = decrease_image(img[0],50);
-		img[2] = img2tensor("/home/enmanuel/Documentos/develop/cpp/ML/dataset/base.jpg");
+		img[2] = img2tensor("Dataset/base.jpg");
 		label = template_matching(img[1],img[2],0.89);
 
 		imshow(window_name, tensor2img(img[0],label)); }

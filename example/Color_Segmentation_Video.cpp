@@ -2,13 +2,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "IA/tensor.h"
-#include "IA/image.h"
+#include "../Libraries/PC/tensor.h"
+#include "../Libraries/PC/image.h"
 
 using namespace std;
 
-char pos[100] = "/home/enmanuel/Documentos/develop/cpp/ML/dataset/color/pos";
-char neg[100] = "/home/enmanuel/Documentos/develop/cpp/ML/dataset/color/neg";
+char pos[100] = "Dataset/color/pos";
+char neg[100] = "Dataset/color/neg";
 char path[100];
 
 tensor* img = new tensor[3];

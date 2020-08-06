@@ -1,6 +1,6 @@
 #include "stdio.h"
 #include "stdlib.h"
-#include "IA/tensor.h"
+#include "../Libraries/PC/tensor.h"
 
 float test[12][4]{
 	{5.3,3.7,1.5,0.2},//{1,0,0}},

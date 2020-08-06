@@ -2,7 +2,7 @@
 
 #include "stdio.h"
 #include "stdlib.h"
-#include "IA/tensor.h"
+#include "../Libraries/PC/tensor.h"
 
 float dataset[30][2][6]{
 	{{51, 30, 39, 61, 92, 45}, {43}},
@@ -45,13 +45,13 @@ float test[4][6]{
 };
 
 int main(){
-	rbfnn M(0.1,sgd,mean_squared);
-	M.add_layer(6,linear,input_layer);
-	M.add_layer(6,linear,hidden_layer);
+	rbfnn M(0.03,momentum,mean_squared);
+	M.add_layer(6,softplus,input_layer);
+	M.add_layer(6,softplus,hidden_layer);
 	M.add_layer(1,linear,output_layer);
 	M.compile();
 
-	M.layer[0].Array[1].set_array(dataset[15][0]);
+	M.layer[0].Array[1].set_array(dataset[2][0]);
 	
 	for(int i=500; i--;){ for(int j=0; j<30 ;j++){ M.fit(dataset[j][0],dataset[j][1]);}}
 	for(int j=0; j<4 ;j++){M.predict(test[j]);}

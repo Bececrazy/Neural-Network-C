@@ -2,7 +2,7 @@
 
 #include "stdio.h"
 #include "stdlib.h"
-#include "IA/tensor.h"
+#include "../Libraries/PC/tensor.h"
 
 float dataset[30][2][6]{
 	{{51, 30, 39, 61, 92, 45}, {43}},

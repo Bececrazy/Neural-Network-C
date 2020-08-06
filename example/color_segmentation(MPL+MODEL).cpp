@@ -1,14 +1,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "IA/tensor.h"
-#include "IA/image.h"
+#include "../Libraries/PC/tensor.h"
+#include "../Libraries/PC/image.h"
 
 using namespace std;
 
-char pos[100] = "/home/enmanuel/Documentos/develop/cpp/ML/dataset/vr/pos";
-char neg[100] = "/home/enmanuel/Documentos/develop/cpp/ML/dataset/vr/neg";
-char tst[100] = "/home/enmanuel/Documentos/develop/cpp/ML/dataset/vr";
+char pos[100] = "Dataset/vr/pos";
+char neg[100] = "Dataset/vr/neg";
+char tst[100] = "Dataset/vr";
 
 //MODEL
 float w[3] = {-2.5,1.3,1.4};
@@ -18,7 +18,7 @@ int main(){
 
 	tensor* image;
 	char path[100];
-	tensor i_gen(128,128);
+	tensor i_gen(100,100);
 
 	mlp nn(2,0.003,sgdw,mean_squared);
 	nn.add_layer(3,sigmoid,input_layer);
@@ -28,7 +28,7 @@ int main(){
 	for(int k=12; k--;){
 			puts("predictions: \n");
 			sprintf(path,"%s/%d.jpg",tst,k);
-			image = img2tensor_color(path); for( int l=3; l--;){ image[l] = decrease_image(image[l],128); }
+			image = img2tensor_color(path); for( int l=3; l--;){ image[l] = decrease_image(image[l],100); }
 			for( int l=image[0].size[2]; l--;){
 				nn.input.data[0] = image[0].data[l];
 				nn.input.data[1] = image[1].data[l];

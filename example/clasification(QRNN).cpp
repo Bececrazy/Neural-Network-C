@@ -2,7 +2,7 @@
 
 #include "stdio.h"
 #include "stdlib.h"
-#include "IA/tensor.h"
+#include "../Libraries/PC/tensor.h"
 
 /*
 	setosa = {1,0,0,0};

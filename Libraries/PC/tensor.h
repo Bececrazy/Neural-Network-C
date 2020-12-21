@@ -65,6 +65,11 @@ class tensor{
 		void show_tensor();
 		void relloc(int x, int y);
 
+		inline void add_row();
+		inline void add_col();
+		inline void del_row();
+		inline void del_col();
+		
 		inline void delloc();
 		inline void set_one();
 		inline void set_zero();
@@ -88,6 +93,7 @@ class tensor{
 		tensor T_reg[6];	//Normal operator Tensor register 
 		tensor I_img[3];	//3 dimentional tensor Register
 		tensor I_reg[6];	//Image Tensor Register
+		tensor H_reg;		//Haar Cascade Tensor register 
 	//* TODO: Tensor Register *//
 
 		//T_reg[0] = fot +- operations
@@ -106,7 +112,7 @@ class tensor{
 
 	inline void tensor::delloc(){ this->relloc(0,0); }
 	inline int  tensor::get_index(int i, int j){return j+i*size[0];}
-	inline int get_index(int i, int j, int center){return center*i+j;}
+	inline int  get_index(int i, int j, int center){return center*i+j;}
 	inline void tensor::set_one(){for(int i=size[2]; i--;){data[i] = 1;}}
 	inline void tensor::set_zero(){for(int i=size[2]; i--;){data[i] = 0;}}
 	inline void tensor::set_order(){for(int i=size[2]; i--;){data[i] = i;}}
@@ -136,6 +142,49 @@ class tensor{
 		for(int i=0, m=0; i<size[0] ;i++){ for(int j=0; j<size[1] ;j++){
 			T_reg[4].data[m] = this->data[get_index(j,i)];m++;}}
 		return T_reg[4];}
+		
+	void tensor::add_row(){
+		int row=size[0], col=size[1]+1;
+		T_reg[0].relloc(size[0],size[1]);
+		T_reg[0].set_array(data);
+		
+		tensor::relloc(row,col);
+		for(int i=T_reg[0].size[1];i--;){for(int j=T_reg[0].size[0];j--;){
+			tensor::data[tensor::get_index(i,j)] = T_reg[0].data[T_reg[0].get_index(i,j)];
+		}}
+	}
+	void tensor::add_col(){
+		int row=size[0]+1, col=size[1];
+		T_reg[0].relloc(size[0],size[1]);
+		T_reg[0].set_array(data);
+		
+		tensor::relloc(row,col);
+		for(int i=T_reg[0].size[1];i--;){for(int j=T_reg[0].size[0];j--;){
+			tensor::data[tensor::get_index(i,j)] = T_reg[0].data[T_reg[0].get_index(i,j)];
+		}}
+	}
+	
+	void tensor::del_row(){
+		int row=size[0], col=size[1]-1;
+		T_reg[0].relloc(size[0],size[1]);
+		T_reg[0].set_array(data);
+		
+		tensor::relloc(row,col);
+		for(int i=col;i--;){for(int j=row;j--;){
+			tensor::data[tensor::get_index(i,j)] = T_reg[0].data[T_reg[0].get_index(i,j)];
+		}}
+	}
+	
+	void tensor::del_col(){
+		int row=size[0]-1, col=size[1];
+		T_reg[0].relloc(size[0],size[1]);
+		T_reg[0].set_array(data);
+		
+		tensor::relloc(row,col);
+		for(int i=col;i--;){for(int j=row;j--;){
+			tensor::data[tensor::get_index(i,j)] = T_reg[0].data[T_reg[0].get_index(i,j)];
+		}}
+	}
 
 ///##########################################################################///
 ///									Math									 ///
@@ -143,7 +192,16 @@ class tensor{
 //TODO: Math Tensor ##########################################################//	
 
 // Tensor math function //
-inline bool near(float x, float b, float r=0.01){ if(x>=b-r and x<=b+r){return true;} else {return false;}}
+inline bool near(float x, float b, float r=0.01){ 
+	if(x>=b-r and x<=b+r){return true;} 
+	else {return false;}}
+
+// Clamp //
+tensor clamp( tensor A, float min, float max ){
+	for(int i=A.size[2]; i--; ){
+		if(A.data[i] < min){ A.data[i] = min; }
+		else if(A.data[i] > max){ A.data[i] = max; }}
+	return A;}
 
 inline float sum(tensor A){ 
 	float res_sum = 0.0;
@@ -508,21 +566,115 @@ float haar_filter_outline(tensor int_img, int i, int j, int sy, int sx){
 		int_img.data[int_img.get_index(i+2*sy-1,j+2*sx-1)]);//BD
 }
 
+
+///##########################################################################///
+///									GET HAAR IMAGE	 						 ///
+///##########################################################################///
+
+tensor get_haar_EdgeVert( tensor img, int sx=1, int sy=1){
+	I_reg[0].relloc( img.size[0],img.size[1] ); img = integral_image(img);
+	for(int i=1; i<img.size[1]-(sy*2); i++){ for(int j=1; j<img.size[0]-sx; j++){
+		I_reg[0].data[I_reg[0].get_index(i,j)] = haar_filter_edge_ver( img,i,j,sy,sx );
+	}} return I_reg[0];}
+
+tensor get_haar_EdgeHor( tensor img, int sx=1, int sy=1){
+	I_reg[0].relloc( img.size[0],img.size[1] ); img = integral_image(img);
+	for(int i=1; i<img.size[1]-sy; i++){ for(int j=1; j<=img.size[0]-(sx*2); j++){
+		I_reg[0].data[I_reg[0].get_index(i,j)] = haar_filter_edge_hor( img,i,j,sy,sx );
+	}} return I_reg[0];}
+
+tensor get_haar_LineVert( tensor img, int sx=1, int sy=1){
+	I_reg[0].relloc( img.size[0],img.size[1] ); img = integral_image(img);
+	for(int i=1; i<img.size[1]-(sy*3); i++){ for(int j=1; j<img.size[0]-sx; j++){
+		I_reg[0].data[I_reg[0].get_index(i,j)] = haar_filter_line_ver( img,i,j,sy,sx );
+	}} return I_reg[0];}
+
+tensor get_haar_LineHor( tensor img, int sx=1, int sy=1){
+	I_reg[0].relloc( img.size[0],img.size[1] ); img = integral_image(img);
+	for(int i=1; i<img.size[1]-sy; i++){ for(int j=1; j<img.size[0]-(sx*3); j++){
+		I_reg[0].data[I_reg[0].get_index(i,j)] = haar_filter_line_hor( img,i,j,sy,sx );
+	}} return I_reg[0];}
+
+tensor get_haar_Outline( tensor img, int sx=1, int sy=1){
+	I_reg[0].relloc( img.size[0],img.size[1] ); img = integral_image(img);
+	for(int i=1; i<img.size[1]-(sy*2); i++){ for(int j=1; j<img.size[0]-(sx*2); j++){
+		I_reg[0].data[I_reg[0].get_index(i,j)] = haar_filter_outline( img,i,j,sy,sx );
+	}} return I_reg[0];}
+
 ///##########################################################################///
 ///								HAAR CASCADE CLASIFIER						 ///
 ///##########################################################################///
+	
+tensor haar_EdgeVert_dataset( tensor img ){ /*Haar feature 1 [0;1] edge vert*/
+
+	int sx=10, sy=10, n_case, data;
+	img = integral_image(img);
+	H_reg.relloc(1,1);
+			
+	while(sy<img.size[1]/2 and sx<img.size[0]-1){
+		for(int i=1; i<img.size[1]-(sy*2); i++){ for(int sx=10,j=1; j<img.size[0]-sx; j++){
+			for(int k=n_case+1; k--;){ data = (int)haar_filter_edge_ver( img,i,j,sy,sx );
+				if( k==0 ){ H_reg.data[n_case]=data; H_reg.add_row(); n_case++;
+				printf("%d\n",data/1000); }
+				else if( near( H_reg.data[k], data, 50) )break; }
+	sx++;}sy++;}} return H_reg;}	
+
+tensor haar_EdgeHor_dataset( tensor img ){ /*Haar feature 2 [0,1] edge hor*/
+
+	int sx=10, sy=10, n_case, data;
+	img = integral_image(img);
+	H_reg.relloc(1,1);
+	
+	while(sy<img.size[1]-1 and sx<img.size[0]/2){
+		for(int i=1; i<img.size[1]-sy; i++){ for(int sx=10,j=1; j<img.size[0]-(sx*2); j++){
+			for(int k=n_case+1; k--;){ data = (int)haar_filter_edge_hor( img,i,j,sy,sx );
+				if( k==0 ){ H_reg.data[n_case]=data; H_reg.add_row(); n_case++; }
+				else if( near( H_reg.data[k], data, 100) )break; }
+	sx++;}sy++;} printf("%d,%d\n",sy,img.size[1]-1); } return H_reg;}	
+
+tensor haar_LineVert_dataset( tensor img ){ /*Haar feature 3 [0;1;0] line vert*/
+
+	int sx=10, sy=10, n_case, data;
+	img = integral_image(img);
+	H_reg.relloc(1,1);
+	
+	while(sy<img.size[1]/3 and sx<img.size[0]-1){
+		for(int i=1; i<img.size[1]-(sy*3); i++){ for(int sx=10,j=1; j<img.size[0]-sx; j++){	
+			for(int k=n_case+1; k--;){ data = (int)haar_filter_line_ver( img,i,j,sy,sx );
+				if( k==0 ){ H_reg.data[n_case]=data; H_reg.add_row(); n_case++; }
+				else if( near( H_reg.data[k], data, 100) )break; }
+	sx++;}sy++;}} return H_reg;}	
+
+tensor haar_LineHor_dataset( tensor img ){ /*Haar feature 4 [0,1,0] line hor*/
+
+	int sx=10, sy=10, n_case, data;
+	img = integral_image(img);
+	H_reg.relloc(1,1);
+	
+	while(sy<img.size[1]-1 and sx<img.size[0]/3){
+		for(int i=1; i<img.size[1]-sy; i++){ for(int sx=10,j=1; j<img.size[0]-(sx*3); j++){		
+			for(int k=n_case+1; k--;){ data = (int)haar_filter_line_hor( img,i,j,sy,sx );
+				if( k==0 ){ H_reg.data[n_case]=data; H_reg.add_row(); n_case++; }
+				else if( near( H_reg.data[k], data, 100) )break; }
+	sx++;}sy++;}} return H_reg;}	
+
+tensor haar_Outline_dataset( tensor img ){ /*Haar feature 5 [0,1;1,0] outline*/
+
+	int sx=10, sy=10, n_case, data;
+	img = integral_image(img);
+	H_reg.relloc(1,1);
+	
+	while(sy<img.size[1]/2 and sx<img.size[0]/2){
+		for(int i=1; i<img.size[1]-(sy*2); i++){ for(int sx=10,j=1; j<img.size[0]-(sx*2); j++){
+			for(int k=n_case+1; k--;){ data = (int)haar_filter_outline( img,i,j,sy,sx );
+				if( k==0 ){ H_reg.data[n_case]=data; H_reg.add_row(); n_case++; }
+				else if( near( H_reg.data[k], data, 100) )break; }
+	sx++;}sy++;}} return H_reg;}	
 	
 ///##########################################################################///
 ///									Activation								 ///
 ///##########################################################################///
 //TODO: Activation Functions #################################################//
-
-// Clamp //
-tensor clamp( tensor A, float min, float max ){
-	for(int i=A.size[2]; i--; ){
-		if(A.data[i] < min){ A.data[i] = min; }
-		else if(A.data[i] > max){ A.data[i] = max; }}
-	return A;}
 
 // linear //
 tensor lin(tensor X, bool dev){ T_reg[5].relloc(X.size[0],X.size[1]);
@@ -1070,6 +1222,250 @@ class rnn{
 		void predict(float* X, float norm=1){
 			input.set_array(X); input /= norm;
 			forwrd(); show_output();}
+};
+
+///##########################################################################///
+///										CNN								 	 ///
+///##########################################################################///
+
+class cnn{
+	public:
+	/// Variables ###################################### layer state ///
+		int i_layer;
+		int image_size;
+		int topology_size;
+							
+	/// Variables ################################### layer features ///
+		int* knl;
+		int* flt;
+		int* type;
+		int* depth;
+					
+	/// Variables #################################### learning rate ///
+		int optimization;
+		float learning_rate;
+		float acceleration_rate;
+					
+	/// layer #######################################################///
+		tensor* input = new tensor[3];
+		tensor output, dropout;
+		mlp clasifier;
+
+		//struct for the feature extractor
+		struct layer_struct{
+			tensor  output;
+			tensor* width; tensor* t_width;	
+			tensor* bias; tensor* t_bias;	
+
+			tensor* loss;
+			tensor* conv; tensor* dIn;
+			tensor* out; tensor* dOut;
+
+		}* layer;
+				
+	/// neural network ################################# constructor ///
+		cnn(int img_size, int n_layer=3, float n_learning_rate=0.1, int n_optimization=sgd, int n_cost_type=mean_squared):
+		clasifier(3, n_learning_rate, n_optimization, n_cost_type){
+			i_layer = 0;
+			image_size = img_size;
+			topology_size = n_layer;
+			acceleration_rate = 0.9;
+			optimization = n_optimization;
+			learning_rate = n_learning_rate;
+			
+			type  = new int[topology_size];
+			flt   = new int[topology_size];
+			knl   = new int[topology_size-1];
+			depth = new int[topology_size-1];
+			layer = new layer_struct[topology_size];
+		}
+				
+	/// neural network ########################### compile functions ///
+		void add_conv_layer(int n_flt, int n_depth, int k_neuron, int n_type){
+			flt[i_layer] 	= n_flt;
+			knl[i_layer] 	= k_neuron;
+			type[i_layer] 	= n_type;
+			depth[i_layer] 	= n_depth;
+			i_layer++;}
+
+		void add_fc_layer(int n_output, int kernel){ int input_size = image_size;
+			for(int i=0; i<topology_size-1 ;i++){ input_size = (input_size-flt[i]+1)/2; }
+			clasifier.add_layer(input_size * input_size * depth[i_layer-1],null,input_layer);
+			clasifier.input.relloc(1,input_size * input_size * depth[i_layer-1]);
+			clasifier.add_layer(n_output,sigmoid,hidden_layer);
+			clasifier.add_layer(n_output,kernel,output_layer);
+			clasifier.output.relloc(1,n_output);
+			type[i_layer] = output_layer;
+			i_layer++;}
+			
+		void compile(){
+			if(topology_size < i_layer){printf("maximo de capas superado %d cnn\n",(i_layer-topology_size));exit(1);}
+			else if(topology_size > i_layer){printf("capas faltantes %d cnn\n",(topology_size-i_layer));exit(1);}
+				
+			for(int i=0, n_depth=1; i<topology_size-1 ;i++){
+				layer[i].t_width = new tensor[depth[i]*n_depth];
+
+				layer[i].width = new tensor[depth[i]*n_depth];
+				layer[i].dOut  = new tensor[depth[i]];
+				layer[i].conv  = new tensor[depth[i]];
+				layer[i].loss  = new tensor[depth[i]];
+				layer[i].dIn   = new tensor[depth[i]];
+				layer[i].out   = new tensor[depth[i]];
+
+				for(int j=depth[i]*n_depth; j--;){
+					layer[i].t_width[j].relloc(flt[i],flt[i]); 	layer[i].t_width[j].set_random();
+					layer[i].width[j].relloc(flt[i],flt[i]); 	layer[i].width[j].set_random();}
+
+				image_size = (image_size-flt[i]+1);
+				for(int j=depth[i]; j--;){
+					layer[i].dIn[j].relloc(image_size+flt[i]-1,image_size+flt[i]-1);
+					layer[i].dOut[j].relloc(image_size/2,image_size/2);
+					layer[i].out[j].relloc(image_size/2,image_size/2);
+					layer[i].conv[j].relloc(image_size,image_size);
+					layer[i].loss[j].relloc(image_size,image_size);
+				} image_size /= 2;
+
+				n_depth=depth[i];}
+			clasifier.compile();}
+				
+	/// neural network ############################# print functions ///
+		void show_model(){ 
+			for(int i=0; i<topology_size-1; i++){ for(int j=0; j<depth[i] ;j++){
+				layer[i].width[j].show_tensor();
+			}}
+		}
+					
+		/// neural network ########################### traning functions ///
+		void forwrd(){
+			for(int i=0; i<topology_size; i++){
+
+				switch(type[i]){
+					case input_layer: 
+						for(int j=depth[i]; j--;){ for(int k=3; --k;){
+							layer[i].conv[j] += correlation( input[k], layer[i].width[ get_index(j,k,3) ] );}
+					//	layer[i].conv[j] = correlation( input, layer[i].width[j] );
+						layer[i].conv[j] = activation( layer[i].conv[j], knl[i], true );
+						layer[i].out[j] = maxpooling( layer[i].conv[j] );
+					}break;
+						
+					case hidden_layer: 
+						for(int j=depth[i]; j--;){ for(int k=depth[i-1]; --k;){
+							layer[i].conv[j] += correlation( layer[i-1].out[k], layer[i].width[ get_index(j,k,depth[i-1]) ] );}	
+						layer[i].conv[j] = activation( layer[i].conv[j], knl[i], true );
+						layer[i].out[j] = maxpooling( layer[i].conv[j] );
+					}break;
+
+					case output_layer:
+						flatten(layer[i-1].out, depth[i-1], clasifier.input, true);
+						clasifier.forwrd(); clasifier.show_output();
+					break;
+		}}}
+
+		void backwrd(){
+			switch( optimization ){
+				case sgd: if(topology_size>2){
+					for(int i=topology_size; i--;){
+						switch(type[i]){
+							case input_layer: for(int j=depth[i]; j--;){
+								layer[i].loss[j] = activation( dmaxpooling( layer[i].conv[j], layer[i].dOut[j] ), knl[i], false );
+								for(int k=3; --k;){
+									layer[i].dIn[k] += convolution( padding(layer[i].loss[j], flt[i]-1), layer[i].width[ get_index(j,k,3) ]);	
+									layer[i].width[ get_index(j,k,depth[i]) ] += correlation( input[k], layer[i].loss[j] ) * learning_rate;}
+							//	layer[i].dIn[j]  = convolution( padding(layer[i].loss[j], flt[i]-1), layer[i].width[j]);
+							//	layer[i].width[j] += correlation( input, layer[i].loss[j] ) * learning_rate;
+							}break;
+								
+							case hidden_layer: for(int j=depth[i]; j--;){
+								layer[i].loss[j] = activation( dmaxpooling( layer[i].conv[j], layer[i].dOut[j] ), knl[i], false );
+								for(int k=depth[i-1]; --k;){
+									layer[i-1].dOut[k] += convolution( padding(layer[i].loss[j], flt[i]-1), layer[i].width[ get_index(j,k,depth[i-1]) ]);	
+									layer[i].width[ get_index(j,k,depth[i-1]) ] += correlation( layer[i-1].out[k], layer[i].loss[j] ) * learning_rate;}
+							}break;
+								
+							case output_layer: clasifier.backwrd();
+								flatten(layer[i-1].dOut, depth[i-1], clasifier.get_loss(), false );
+							break;
+						}
+					}}
+
+					else{ clasifier.backwrd();
+						flatten(layer[0].dOut, depth[0], clasifier.get_loss(), false );
+						for(int j=depth[0]; j--;){
+							layer[0].loss[j]  = activation( dmaxpooling( layer[0].conv[j], layer[0].dOut[j] ), knl[0], false );
+								for(int k=3; --k;){
+									layer[0].dIn[k] += convolution( padding(layer[0].loss[j], flt[0]-1), layer[0].width[ get_index(j,k,3) ]);	
+									layer[0].width[ get_index(j,k,depth[0]) ] += correlation( input[k], layer[0].loss[j] ) * learning_rate;}
+						//	layer[0].dIn[j]   = convolution( padding(layer[0].loss[j], flt[0]-1), layer[0].width[j]);
+						//	layer[0].width[j] += correlation( input, layer[0].loss[j] ) * learning_rate;
+						}
+					}
+				break;
+
+				case momentum: if(topology_size>2){
+					for(int i=topology_size; i--;){
+						switch(type[i]){
+							case input_layer: for(int j=depth[i]; j--;){
+								layer[i].loss[j] = activation( dmaxpooling( layer[i].conv[j], layer[i].dOut[j] ), knl[i], false );
+								for(int k=3; --k;){
+									layer[i].dIn[k] += convolution( padding(layer[i].loss[j], flt[i]-1), layer[i].width[ get_index(j,k,3) ]);	
+									
+									layer[i].t_width[j] *= acceleration_rate; 
+									layer[i].t_width[get_index(j,k,3)] += correlation( input[k], layer[i].loss[j] );
+									layer[i].width[get_index(j,k,3)] += layer[i].t_width[get_index(j,k,3)] * learning_rate;
+								}
+									
+							//	layer[i].dIn[j]  = convolution( padding(layer[i].loss[j], flt[i]-1), layer[i].width[j]);
+								
+							//	layer[i].t_width[j] *= acceleration_rate; 
+							//	layer[i].t_width[j] += correlation( input, layer[i].loss[j] );
+							//	layer[i].width[j] 	+= layer[i].t_width[j] * learning_rate;
+							}break;
+								
+							case hidden_layer: for(int j=depth[i]; j--;){
+								layer[i].loss[j] = activation( dmaxpooling( layer[i].conv[j], layer[i].dOut[j] ), knl[i], false );
+								for(int k=depth[i-1]; --k;){
+									layer[i-1].dOut[k] += convolution( padding(layer[i].loss[j], flt[i]-1), layer[i].width[ get_index(j,k,depth[i-1]) ]);	
+									
+									layer[i].t_width[j] *= acceleration_rate; 
+									layer[i].t_width[get_index(j,k,depth[i-1])] += correlation( layer[i-1].out[k], layer[i].loss[j] );
+									layer[i].width[get_index(j,k,depth[i-1])] += layer[i].t_width[get_index(j,k,depth[i-1])] * learning_rate;
+								}
+							}break;
+								
+							case output_layer: clasifier.backwrd();
+								flatten(layer[i-1].dOut, depth[i-1], clasifier.get_loss(), false );
+							break;
+						}
+					}}
+
+					else{ clasifier.backwrd(); 
+						flatten(layer[0].dOut, depth[0], clasifier.get_loss(), false );
+						for(int j=depth[0]; j--;){
+							layer[0].loss[j] = activation( dmaxpooling( layer[0].conv[j], layer[0].dOut[j] ), knl[0], false );
+								for(int k=3; --k;){
+									layer[0].dIn[k] += convolution( padding(layer[0].loss[j], flt[0]-1), layer[0].width[ get_index(j,k,3) ]);	
+									
+									layer[0].t_width[j] *= acceleration_rate; 
+									layer[0].t_width[get_index(j,k,3)] += correlation( input[k], layer[0].loss[j] );
+									layer[0].width[get_index(j,k,3)] += layer[0].t_width[get_index(j,k,3)] * learning_rate;
+								}
+								
+						//	layer[0].dIn[j]  = convolution( padding(layer[0].loss[j], flt[0]-1), layer[0].width[j]);
+							
+						//	layer[0].t_width[j] *= acceleration_rate;
+						//	layer[0].t_width[j] += correlation( input, layer[0].loss[j] );
+						//	layer[0].width[j] 	+= layer[0].t_width[j] * learning_rate;
+						}
+					}
+				break;
+			}
+		}
+			
+		void fit(tensor* X, float* Y){
+			input = X; clasifier.output.set_array(Y);
+			forwrd(); backwrd(); }
+
+		void predict(tensor* X){ input = X; forwrd(); }
 };
 
 ///##########################################################################///

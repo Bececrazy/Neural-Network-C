@@ -8,13 +8,13 @@ using namespace cv;
 
 //TODO: get_Image ############################################################//
 tensor* img2tensor_color(const char* path){ Mat img_cv = imread(path);
-	for(int i=3; i--;){ I_img[i].relloc(img_cv.rows,img_cv.cols);}
+	for(int i=3; i--;){ I_img[i].relloc(img_cv.cols,img_cv.rows);}
 	for(int i=3; i--;){ for(int j=I_img[0].size[2]; j--;){ I_img[i].data[j] = img_cv.data[j*3+i];
 	} I_img[i] /= 255; }
 return I_img;}
 
 tensor* img2tensor_color(Mat img_cv){
-	for(int i=3; i--;){ I_img[i].relloc(img_cv.rows,img_cv.cols);}
+	for(int i=3; i--;){ I_img[i].relloc(img_cv.cols,img_cv.rows);}
 	for(int i=3; i--;){ for(int j=I_img[0].size[2]; j--;){ I_img[i].data[j] = img_cv.data[j*3+i];
 	} I_img[i] /= 255; }
 return I_img;}
@@ -44,12 +44,12 @@ void save_image( string PATH,tensor* img ){ imwrite(PATH,tensor2img_color(img));
 //TODO: get Image ############################################################//
 tensor img2tensor(const char* path){
 	Mat img_cv = imread(path);
-	I_reg[0].relloc(img_cv.rows,img_cv.cols);
+	I_reg[0].relloc(img_cv.cols, img_cv.rows);
 	for(int i=3; i--;){ for(int j=I_reg[0].size[2]; j--;){ I_reg[0].data[j] += img_cv.data[j*3+i]; }}
 return I_reg[0]/(3*255);}
 
 tensor img2tensor(Mat img_cv){
-	I_reg[0].relloc(img_cv.rows,img_cv.cols);
+	I_reg[0].relloc(img_cv.cols, img_cv.rows);
 	for(int i=3; i--;){ for(int j=I_reg[0].size[2]; j--;){ I_reg[0].data[j] += img_cv.data[j*3+i]; }}
 return I_reg[0]/(3*255);}
 
